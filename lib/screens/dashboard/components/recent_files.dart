@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:projectpfe/models/Marche.dart';
 import 'package:projectpfe/models/Projet.dart';
 import 'package:projectpfe/screens/MarcheScreen/marches_screen.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../constants.dart';
 
@@ -20,6 +22,27 @@ class RecentFiles extends StatefulWidget {
 }
 
 class _RecentFilesState extends State<RecentFiles> {
+  Timer? _timer;
+  int _start = 5;
+
+  void startTimer() {
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(
+      oneSec,
+      (Timer timer) {
+        if (_start == 0) {
+          setState(() {
+            timer.cancel();
+          });
+        } else {
+          setState(() {
+            _start--;
+          });
+        }
+      },
+    );
+  }
+
   List<Marche>? countriesData;
   List? marcheList;
 
@@ -63,7 +86,7 @@ class _RecentFilesState extends State<RecentFiles> {
   //Future method to read the URL
   fetchInfo() async {
     final response = await http
-        .get(Uri.parse("http://192.168.1.65:5000/marche?page=1&limit=4"));
+        .get(Uri.parse("http://" + ipAddress + "/marche?page=1&limit=4"));
     final jsonresponse = parseResponse(response.body);
     if (mounted) {
       setState(() {
@@ -87,103 +110,206 @@ class _RecentFilesState extends State<RecentFiles> {
         color: secondaryColor,
         borderRadius: const BorderRadius.all(Radius.circular(10)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Marches",
-                style: Theme.of(context).textTheme.subtitle1,
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              new MarcheScreen(selectedMarches, 0)));
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: Text("Afficher Tous ..",
-                      style: TextStyle(
-                          decoration: TextDecoration.underline,
-                          color: Colors.blue)),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(
-            width: double.infinity,
-            child: DataTable(
-              horizontalMargin: 0,
-              columnSpacing: defaultPadding,
-              columns: [
-                DataColumn(
-                  label: Text("Numéro"),
-                ),
-                DataColumn(
-                  label: Text("Montant"),
-                ),
-                DataColumn(
-                  label: Text("Avancement"),
-                ),
-              ],
-              rows: countriesData!
-                  .map(
-                    (projet) => DataRow(cells: [
-                      DataCell(
-                        Row(
-                          children: [
-                            SvgPicture.asset(
-                              "assets/icons/doc_file.svg",
-                              height: 20,
-                              width: 20,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: defaultPadding),
-                              child: Text(
-                                projet.numMarche.toString(),
+      child: countriesData == []
+          ? Shimmer.fromColors(
+              period: Duration(seconds: 6),
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Marches",
+                        style: Theme.of(context).textTheme.subtitle1,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      new MarcheScreen(selectedMarches, 0)));
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Text("Afficher Tous ..",
+                              style: TextStyle(
+                                  decoration: TextDecoration.underline,
+                                  color: Colors.blue)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: DataTable(
+                      horizontalMargin: 0,
+                      columnSpacing: defaultPadding,
+                      columns: [
+                        DataColumn(
+                          label: Text("Numéro"),
+                        ),
+                        DataColumn(
+                          label: Text("Montant"),
+                        ),
+                        DataColumn(
+                          label: Text("Avancement"),
+                        ),
+                      ],
+                      rows: countriesData!
+                          .map(
+                            (projet) => DataRow(cells: [
+                              DataCell(
+                                Row(
+                                  children: [
+                                    SvgPicture.asset(
+                                      "assets/icons/doc_file.svg",
+                                      height: 20,
+                                      width: 20,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: defaultPadding),
+                                      child: Text(
+                                        projet.numMarche.toString(),
+                                        style: TextStyle(fontSize: 13),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              DataCell(Text(
+                                '${projet.montantMarche.toString()}',
                                 style: TextStyle(fontSize: 13),
+                              )),
+                              DataCell(
+                                Padding(
+                                  padding: EdgeInsets.all(15.0),
+                                  child: new LinearPercentIndicator(
+                                    width: 80,
+                                    animation: true,
+                                    lineHeight: 18.0,
+                                    animationDuration: 2500,
+                                    percent: double.parse(
+                                            projet.avancement.toString()) /
+                                        100,
+                                    center: Text(
+                                      '${double.parse((projet.avancement.toString()))} %',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                    linearStrokeCap: LinearStrokeCap.roundAll,
+                                    progressColor: Colors.green,
+                                  ),
+                                ),
+                              ),
+                            ]),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Marches",
+                      style: Theme.of(context).textTheme.subtitle1,
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    new MarcheScreen(selectedMarches, 0)));
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: Text("Afficher Tous ..",
+                            style: TextStyle(
+                                decoration: TextDecoration.underline,
+                                color: Colors.blue)),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: DataTable(
+                    horizontalMargin: 0,
+                    columnSpacing: defaultPadding,
+                    columns: [
+                      DataColumn(
+                        label: Text("Numéro"),
+                      ),
+                      DataColumn(
+                        label: Text("Montant"),
+                      ),
+                      DataColumn(
+                        label: Text("Avancement"),
+                      ),
+                    ],
+                    rows: countriesData!
+                        .map(
+                          (projet) => DataRow(cells: [
+                            DataCell(
+                              Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    "assets/icons/doc_file.svg",
+                                    height: 20,
+                                    width: 20,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: defaultPadding),
+                                    child: Text(
+                                      projet.numMarche.toString(),
+                                      style: TextStyle(fontSize: 13),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      DataCell(Text(
-                        '${projet.montantMarche.toString()}',
-                        style: TextStyle(fontSize: 13),
-                      )),
-                      DataCell(
-                        Padding(
-                          padding: EdgeInsets.all(15.0),
-                          child: new LinearPercentIndicator(
-                            width: 80,
-                            animation: true,
-                            lineHeight: 18.0,
-                            animationDuration: 2500,
-                            percent:
-                                double.parse(projet.avancement.toString()) /
-                                    100,
-                            center: Text(
-                              '${double.parse((projet.avancement.toString()))} %',
-                              style: TextStyle(fontSize: 12),
+                            DataCell(Text(
+                              '${projet.montantMarche.toString()}',
+                              style: TextStyle(fontSize: 13),
+                            )),
+                            DataCell(
+                              Padding(
+                                padding: EdgeInsets.all(15.0),
+                                child: new LinearPercentIndicator(
+                                  width: 80,
+                                  animation: true,
+                                  lineHeight: 18.0,
+                                  animationDuration: 2500,
+                                  percent: double.parse(
+                                          projet.avancement.toString()) /
+                                      100,
+                                  center: Text(
+                                    '${double.parse((projet.avancement.toString()))} %',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  linearStrokeCap: LinearStrokeCap.roundAll,
+                                  progressColor: Colors.green,
+                                ),
+                              ),
                             ),
-                            linearStrokeCap: LinearStrokeCap.roundAll,
-                            progressColor: Colors.green,
-                          ),
-                        ),
-                      ),
-                    ]),
-                  )
-                  .toList(),
+                          ]),
+                        )
+                        .toList(),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }

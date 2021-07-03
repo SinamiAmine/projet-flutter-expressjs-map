@@ -12,7 +12,7 @@ const bgColor = Color(0xFF212332);
 const defaultPadding = 16.0;
 const kPrimaryColor = Color(0xFF6F35A5);
 const kPrimaryLightColor = Color(0xFFF1E6FF);
-const ipAddress = "192.168.1.65:5000";
+const ipAddress = "192.168.1.121:5000";
 
 List<Projet>? selectedProjets = [];
 List<Foncier>? selectedFonciers = [];

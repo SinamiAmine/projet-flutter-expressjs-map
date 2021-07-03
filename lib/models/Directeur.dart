@@ -32,12 +32,11 @@ class Directeur {
   factory Directeur.fromJson(Map<String, dynamic> json) {
     return Directeur(
       id: json["_id"] as String?,
-      code: json['codeFoncier'] as int?,
+      code: json['code'] as num?,
       matricule: json['matricule'] as num?,
       nom: json['nom'] as String?,
       prenom: json['prenom'] as String?,
       numCin: json['numCin'] as String?,
-      codeFonction: json['codeFonction'] as num?,
       telephone: json['telephone'] as String?,
       email: json['email'] as String?,
       dateNaiss: json['dateNaiss'] as String?,

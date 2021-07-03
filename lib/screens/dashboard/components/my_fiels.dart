@@ -223,7 +223,9 @@ class _FileInfoCardGridViewState extends State<FileInfoCardGridView> {
                     height: 6,
                   ),
                   Text(
-                    '${dataProjet!.length} Projets ',
+                    dataProjet!.length != 0
+                        ? '${dataProjet!.length} Projets '
+                        : '${dataProjet!.length} Projets ',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -232,7 +234,9 @@ class _FileInfoCardGridViewState extends State<FileInfoCardGridView> {
                   ),
                   ProgressLine(
                     color: Colors.green,
-                    percentage: dataProjet!.length,
+                    percentage: dataProjet!.length != 0
+                        ? dataProjet!.length
+                        : dataProjet!.length,
                   ),
                   SizedBox(
                     height: 6,

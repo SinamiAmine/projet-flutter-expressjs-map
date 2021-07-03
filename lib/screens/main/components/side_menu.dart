@@ -67,8 +67,7 @@ class SideMenu extends StatelessWidget {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) =>
-                            new DirecteurScreen()));
+                        builder: (context) => new DirecteurScreen(0)));
               },
             ),
             DrawerListTile(
